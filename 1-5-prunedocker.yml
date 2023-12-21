@@ -1,0 +1,10 @@
+---
+
+- name: Prune docker servers
+  gather_facts: true
+  hosts: docker
+  become: yes
+  tasks:
+
+  - name: Manual docker command to prune
+    ansible.builtin.shell: docker image prune -af
