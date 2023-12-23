@@ -1,0 +1,63 @@
+---
+- name: Update Linux hosts
+  hosts: rpis
+  ignore_unreachable: yes
+  gather_facts: yes
+  become: yes
+
+  tasks:
+
+#  - name: Update Yum
+#    yum: update_cache=yes
+#    when: ansible_facts['os_family'] == 'RedHat'
+#    register: yum_updated
+  - name: Update Apt
+    apt: update_cache=yes
+    when: ansible_facts['os_family'] == 'Debian'
+    register: apt_updated
+  - name: Update Apk
+    community.general.apk:
+     update_cache: yes
+    when: ansible_facts['os_family'] == 'Alpine'
+    register: apk_updated
+
+#  - name: Upgrade Yum
+#    ansible.builtin.yum:
+#     name: '*'
+#     state: latest
+#    when: ansible_facts['os_family'] == 'RedHat'
+  - name: Upgrade Apt
+    ansible.builtin.apt:
+     name: '*'
+     state: latest
+     force_apt_get: yes
+    when: ansible_facts['os_family'] == 'Debian'
+
+  - name: Upgrade Apk
+    community.general.apk:
+     upgrade: true
+    when: ansible_facts['os_family'] == 'Alpine'
+    register: apk_upgraded
+
+
+#  - name: Yum Autoremove
+#    ansible.builtin.yum:
+#     autoremove: yes
+##   when: yum_upgraded is succeeded
+#    when: ansible_facts['os_family'] == 'RedHat'
+  - name: Apt Autoremove
+    ansible.builtin.apt:
+     autoremove: yes
+#    when: apt_upgraded is succeeded
+    when: ansible_facts['os_family'] == 'Debian'
+
+  - name: truncate logs
+    command: truncate -s 1024 /var/log/*.*
+
+#  - name: Yum autoclean
+#    command: "yum clean all"
+#    when: ansible_facts['os_family'] == 'RedHat'
+  - name: Apt autoclean
+    ansible.builtin.apt:
+     autoclean: yes
+    when: ansible_facts['os_family'] == 'Debian'
