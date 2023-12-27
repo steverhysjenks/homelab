@@ -31,7 +31,7 @@
      name: '*'
      state: latest
      force_apt_get: yes
-    when: ansible_facts['os_family'] == 'Debian'
+    when: ansible_facts['os_family'] == 'Debian' or ansible_facts['os_family'] == 'Ubuntu'
 
   - name: Upgrade Apk
     community.general.apk:
@@ -49,7 +49,7 @@
     ansible.builtin.apt:
      autoremove: yes
 #    when: apt_upgraded is succeeded
-    when: ansible_facts['os_family'] == 'Debian'
+    when: ansible_facts['os_family'] == 'Debian' or ansible_facts['os_family'] == 'Ubuntu'
 
   - name: truncate logs
     command: truncate -s 1024 /var/log/*.*
@@ -60,4 +60,4 @@
   - name: Apt autoclean
     ansible.builtin.apt:
      autoclean: yes
-    when: ansible_facts['os_family'] == 'Debian'
+    when: ansible_facts['os_family'] == 'Debian' or ansible_facts['os_family'] == 'Ubuntu'
