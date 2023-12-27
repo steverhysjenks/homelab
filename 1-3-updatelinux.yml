@@ -13,7 +13,7 @@
 #    register: yum_updated
   - name: Update Apt
     apt: update_cache=yes
-    when: ansible_facts['os_family'] == 'Debian'
+    when: ansible_facts['os_family'] == 'Debian' or ansible_facts['os_family'] == 'Ubuntu'
     register: apt_updated
   - name: Update Apk
     community.general.apk:
