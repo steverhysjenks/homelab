@@ -1,6 +1,6 @@
 ---
-- name: Update Linux hosts
-  hosts: linux
+- name: Update Proxmox Linux VM
+  hosts: proxmox-linux-vms
   ignore_unreachable: yes
   gather_facts: yes
   become: yes
