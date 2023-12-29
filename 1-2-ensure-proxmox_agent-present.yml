@@ -8,7 +8,7 @@
   tasks:
 
 #  - name: Check Proxmox Agent is present / installed
-  - name: Install qemu-guest-agent
+  - name: Install qemu guest agent
     ansible.builtin.apt:
     name: qemu-guest-agent
     state: present
