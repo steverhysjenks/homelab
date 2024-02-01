@@ -1,5 +1,5 @@
 ---
- - hosts: all
+ - hosts: sshkeytest
    vars:
      - semaphore_password: '$5$k7QFr1iCgzt0pLbW$kORL7zDfq6p06DQKEJnM10GiI2E1x39FPYzYfMxxwd4'
   gather_facts: no
