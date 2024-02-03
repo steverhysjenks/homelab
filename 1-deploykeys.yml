@@ -17,20 +17,20 @@
          dest: "/etc/sudoers.d/semaphoretest"
          content: "semaphoretest  ALL=(ALL)  NOPASSWD: ALL"
 
-  - name: Deploy SSH Key
-    authorized_key: user=semaphoretest
-                    key="{{ lookup('file', '/home/semaphore/.ssh/id_rsa.pub') }}"
-                    state=present
+  #- name: Deploy SSH Key
+  #  authorized_key: user=semaphoretest
+  #                  key="{{ lookup('file', '/home/semaphore/.ssh/id_rsa.pub') }}"
+  #                  state=present
 
-  - name: Disable Password Authentication
-    lineinfile:
-          dest=/etc/ssh/sshd_config
-          regexp='^PasswordAuthentication'
-          line="PasswordAuthentication no"
-          state=present
-          backup=yes
-    notify:
-      - restart ssh
+ # - name: Disable Password Authentication
+ #   lineinfile:
+ #         dest=/etc/ssh/sshd_config
+ #         regexp='^PasswordAuthentication'
+ #         line="PasswordAuthentication no"
+ #         state=present
+ #         backup=yes
+ #   notify:
+ #     - restart ssh
 
 #  - name: Disable Root Login
 #    lineinfile:
