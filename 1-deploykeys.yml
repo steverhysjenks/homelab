@@ -10,8 +10,11 @@
   - name: Add a new user named semaphore
     user:
          name=semaphoretest
-         password={{ semaphore_password }}
-
+         #password={{ semaphore_password }}
+         password: "{{ 'ansibleadmin1' | password_hash('sha512') }}"  # Encrypted password
+         state: present  # Ensure the user is present
+         createhome: yes  # Create the user's home directory
+        
   - name: Add semaphoretest user to the sudoers
     copy:
          dest: "/etc/sudoers.d/semaphoretest"
