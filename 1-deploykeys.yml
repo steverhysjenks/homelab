@@ -1,7 +1,7 @@
 ---
 - hosts: sshkeytest
-  vars:
-   - semaphore_password: 'ansibleadmin1'
+  #vars:
+  # - semaphore_password: 'ansibleadmin1'
   gather_facts: no
   #remote_user: root
  
