@@ -9,7 +9,7 @@
 
   - name: Add a new user named semaphore
     user:
-         name=semaphoretest
+         name: semaphoretest
          #password={{ semaphore_password }}
          password: "{{ 'ansibleadmin1' | password_hash('sha512') }}"  # Encrypted password
          state: present  # Ensure the user is present
