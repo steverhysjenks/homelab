@@ -1,5 +1,5 @@
 ---
-- hosts: rpis
+- hosts: sshkeytest
   become: yes
   become_user: root
   vars:
