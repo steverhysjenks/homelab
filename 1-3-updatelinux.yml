@@ -21,6 +21,10 @@
     when: ansible_facts['os_family'] == 'Alpine'
     register: apk_updated
 
+ - name: Respository updated complete
+   debug:
+     msg: {{apt_updated}}
+
   - name: Upgrade Yum
     ansible.builtin.yum:
      name: '*'
