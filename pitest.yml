@@ -6,3 +6,7 @@
     ansible_python_interpreter: /usr/bin/python3
   tasks:
     - debug: msg="Ansible running in {{ansible_lsb.id}}!"
+    - name: Update Apt
+    apt: update_cache=yes
+    when: ansible_facts['os_family'] == 'Debian'
+    register: apt_updated
