@@ -23,7 +23,7 @@
 
   - name: Respository updated complete
     debug:
-     msg: {{apt_updated}}
+     msg: "{{apt_updated}}"
 
   - name: Upgrade Yum
     ansible.builtin.yum:
