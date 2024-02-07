@@ -10,7 +10,7 @@
       register: disk_usage
     - name: Respository updated complete
       debug:
-       msg: "Consumed disk space is {{disk_usage}} | select('match', '^(%)' | list"
+       msg: "Consumed disk space is {{disk_usage.stdout}}"
     
     # - name: send discord message when disk space is over 80%
     #   uri:
