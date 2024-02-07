@@ -8,4 +8,5 @@
 
   - name: Manual docker command to prune
     ansible.builtin.shell: docker image prune -af
-      command_handling: compatibility
+    args:
+      executable: /bin/bash
