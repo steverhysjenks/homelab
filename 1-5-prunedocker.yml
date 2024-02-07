@@ -9,11 +9,11 @@
   #- name: Manual docker command to prune
   #  ansible.builtin.shell: docker image prune -af
 
-  - name: Prune via docker module
-    community.docker.docker_prune:
-    containers: false
-    images: true
-    networks: false
-    volumes: false
-    builder_cache: false
+   - name: Prune via docker module
+     community.docker.docker_prune:
+     containers: false
+     images: true
+     networks: false
+     volumes: false
+     builder_cache: false
 
