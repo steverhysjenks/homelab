@@ -10,8 +10,7 @@
       register: disk_usage
     - name: Respository updated complete
       debug:
-       #msg: "{{disk_usage}} | select('match', '^(%)' | list"
-       msg: "{{ lookup({{disk_usage}}, regex_search('[0-9]%') }}"
+       msg: "{{disk_usage}} | select('match', '^(%)' | list"
     
     # - name: send discord message when disk space is over 80%
     #   uri:
