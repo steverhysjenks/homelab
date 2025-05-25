@@ -1,6 +1,6 @@
 ---
 - name: Baseline setup for Raspberry Pi Docker Swarm nodes
-  hosts: pis
+  hosts: rpis
   become: true
 
   vars:
