@@ -1,42 +1,40 @@
 ---
-- name: Baseline setup for Raspberry Pi Docker Swarm nodes
-  hosts: rpidockerswarm
+- name: Baseline setup and Docker install for Raspberry Pis
+  hosts: pis
   become: true
-
   vars:
     nfs_server: "192.168.0.4"
     nfs_share: "/volume1/docker"
     mount_point: "/mnt/ds918-docker"
 
   tasks:
-
     - name: Ensure APT cache is updated
       apt:
         update_cache: yes
         cache_valid_time: 3600
 
-    - name: Upgrade all packages to the latest version
+    - name: Upgrade all packages
       apt:
         upgrade: dist
         autoremove: yes
 
-    - name: Disable Wi-Fi (dtoverlay method for all Pi models)
+    - name: Disable Wi-Fi in /boot/config.txt
       lineinfile:
         path: /boot/config.txt
         line: "dtoverlay=disable-wifi"
         state: present
       notify: reboot_required
 
-    - name: Disable wireless interface at runtime
+    - name: Disable Wi-Fi at runtime
       command: nmcli radio wifi off
-      when: ansible_facts['distribution'] == 'Raspbian' or ansible_facts['distribution'] == 'Debian'
+      ignore_errors: yes
 
     - name: Install NFS client packages
       apt:
         name: nfs-common
         state: present
 
-    - name: Create the NFS mount directory
+    - name: Create the NFS mount point
       file:
         path: "{{ mount_point }}"
         state: directory
@@ -50,7 +48,7 @@
         opts: rw,vers=4
         state: mounted
 
-    - name: Ensure NFS mount is persistent on boot
+    - name: Make NFS mount persistent
       mount:
         src: "{{ nfs_server }}:{{ nfs_share }}"
         path: "{{ mount_point }}"
@@ -58,7 +56,7 @@
         opts: rw,vers=4
         state: present
 
-    - name: Install Docker dependencies (optional, prep for Docker install)
+    - name: Install Docker dependencies
       apt:
         name:
           - ca-certificates
@@ -67,9 +65,74 @@
           - lsb-release
         state: present
 
+    - name: Add Docker GPG key
+      apt_key:
+        url: https://download.docker.com/linux/debian/gpg
+        state: present
+
+    - name: Add Docker repository
+      apt_repository:
+        repo: "deb [arch=arm64] https://download.docker.com/linux/debian {{ ansible_distribution_release }} stable"
+        state: present
+      when: ansible_architecture == "aarch64"
+
+    - name: Install Docker CE
+      apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+        state: latest
+        update_cache: yes
+
+    - name: Ensure Docker is started and enabled
+      systemd:
+        name: docker
+        enabled: true
+        state: started
+
   handlers:
     - name: reboot_required
       reboot:
-        msg: "Rebooting to apply changes (e.g., Wi-Fi disabled)"
+        msg: "Rebooting to disable Wi-Fi"
         connect_timeout: 5
         reboot_timeout: 600
+
+- name: Initialize Docker Swarm on manager
+  hosts: pi_manager
+  become: true
+  tasks:
+    - name: Initialize Docker Swarm
+      shell: |
+        docker swarm init --advertise-addr {{ ansible_host }}
+      register: swarm_init
+      changed_when: "'Swarm initialized' in swarm_init.stdout"
+      failed_when: "'Error' in swarm_init.stderr"
+      args:
+        creates: /var/lib/docker/swarm
+
+    - name: Get join token for workers
+      shell: docker swarm join-token worker -q
+      register: swarm_token
+
+    - name: Set fact for worker join token
+      set_fact:
+        docker_swarm_join_token: "{{ swarm_token.stdout }}"
+
+    - name: Save manager IP
+      set_fact:
+        docker_swarm_manager_ip: "{{ ansible_host }}"
+
+- name: Join worker nodes to the swarm
+  hosts: pi_workers
+  become: true
+  vars:
+    docker_swarm_manager_ip: "192.168.0.185"  # You can pass this from facts or vars
+  tasks:
+    - name: Join swarm as worker
+      shell: |
+        docker swarm join --token {{ hostvars['192.168.0.185'].docker_swarm_join_token }} {{ docker_swarm_manager_ip }}:2377
+      args:
+        creates: /var/lib/docker/swarm
+      register: swarm_join
+      changed_when: "'This node joined a swarm as a worker' in swarm_join.stdout"
