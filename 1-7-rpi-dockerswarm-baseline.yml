@@ -102,17 +102,22 @@
   hosts: pi_manager
   become: true
   tasks:
-    - name: Initialize Docker Swarm if not already a manager
-      shell: |
-        docker info --format '{{ "{{ .Swarm.LocalNodeState }}" }}' | grep -q active || \
-        docker swarm init --advertise-addr {{ ansible_host }}
+    - name: Check if already a swarm manager
+      shell: docker info --format '{{ "{{ .Swarm.LocalNodeState }}" }}'
+      register: swarm_state
+      changed_when: false
+      failed_when: false
+
+    - name: Initialize Docker Swarm if not already initialized
+      shell: docker swarm init --advertise-addr {{ ansible_host }}
       register: swarm_init
-      changed_when: "'Swarm initialized' in swarm_init.stdout or swarm_init.rc == 0"
+      when: swarm_state.stdout != "active"
+      changed_when: "'Swarm initialized' in swarm_init.stdout"
+      failed_when: swarm_init.rc != 0
 
     - name: Get join token for workers
       shell: docker swarm join-token worker -q
       register: swarm_token
-      failed_when: swarm_token.rc != 0 or swarm_token.stdout == ""
       changed_when: false
 
     - name: Set fact for worker join token
