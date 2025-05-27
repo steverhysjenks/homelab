@@ -11,21 +11,15 @@
     yum: update_cache=yes
     when: ansible_facts['os_family'] == 'RedHat'
     register: yum_updated
-    async: 3600
-    poll: 60
   - name: Update Apt
     apt: update_cache=yes
     when: ansible_facts['os_family'] == 'Debian' or ansible_facts['os_family'] == 'Ubuntu'
     register: apt_updated
-    async: 3600
-    poll: 60
   - name: Update Apk
     community.general.apk:
      update_cache: yes
     when: ansible_facts['os_family'] == 'Alpine'
     register: apk_updated
-    async: 3600
-    poll: 60
 
   #- name: Respository updated complete
   #  debug:
@@ -37,8 +31,6 @@
      state: latest
     when: ansible_facts['os_family'] == 'RedHat'
     register: yum_upgraded
-    async: 3600
-    poll: 60
   - name: Upgrade Apt
     ansible.builtin.apt:
      name: '*'
@@ -46,15 +38,11 @@
      force_apt_get: yes
     when: ansible_facts['os_family'] == 'Debian' or ansible_facts['os_family'] == 'Ubuntu'
     register: apt_upgraded
-    async: 3600
-    poll: 60
   - name: Upgrade Apk
     community.general.apk:
      upgrade: true
     when: ansible_facts['os_family'] == 'Alpine'
     register: apk_upgraded
-    async: 3600
-    poll: 60
 
   - name: Yum Autoremove
     ansible.builtin.yum:
