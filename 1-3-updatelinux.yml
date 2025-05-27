@@ -66,12 +66,12 @@
     when: apt_upgraded is succeeded and ansible_facts['os_family'] == 'Debian' or ansible_facts['os_family'] == 'Ubuntu'
 
   - name: Truncate rotated logs
-  find:
-    paths: /var/log
-    patterns: "*.log"
-    age: 7d
-    recurse: yes
-  register: old_logs
+    find:
+      paths: /var/log
+      patterns: "*.log"
+      age: 7d
+      recurse: yes
+    register: old_logs
 
   - name: Truncate old logs
     command: truncate -s 0 {{ item.path }}
