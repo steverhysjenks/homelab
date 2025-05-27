@@ -7,82 +7,82 @@
 
   tasks:
 
-  - name: Update Yum
-    yum: update_cache=yes
-    when: ansible_facts['os_family'] == 'RedHat'
-    register: yum_updated
-  - name: Update Apt
-    apt: update_cache=yes
-    when: apt_upgraded is succeeded and (ansible_facts['os_family'] == 'Debian' or ansible_facts['os_family'] == 'Ubuntu')
-    register: apt_updated
-  - name: Update Apk
-    community.general.apk:
-     update_cache: yes
-    when: ansible_facts['os_family'] == 'Alpine'
-    register: apk_updated
+    - name: Check disk usage
+      command: df -h /
+      register: root_disk
 
-  #- name: Respository updated complete
-  #  debug:
-  #   msg: "{{apt_updated}}"
+    - debug:
+        var: root_disk.stdout_lines
 
-  - name: Upgrade Yum
-    ansible.builtin.yum:
-     name: '*'
-     state: latest
-    when: ansible_facts['os_family'] == 'RedHat'
-    register: yum_upgraded
-  - name: Upgrade Apt
-    ansible.builtin.apt:
-     name: '*'
-     state: latest
-     force_apt_get: yes
-    when: ansible_facts['os_family'] == 'Debian' or ansible_facts['os_family'] == 'Ubuntu'
-    register: apt_upgraded
-  - name: Upgrade Apk
-    community.general.apk:
-     upgrade: true
-    when: ansible_facts['os_family'] == 'Alpine'
-    register: apk_upgraded
+    - name: Update Yum
+      yum:
+        update_cache: yes
+      when: ansible_facts['os_family'] == 'RedHat'
+      register: yum_updated
 
-  - name: Yum Autoremove
-    ansible.builtin.yum:
-     autoremove: yes
-    when: yum_upgraded is succeeded and ansible_facts['os_family'] == 'RedHat'
-  - name: Apt Autoremove
-    ansible.builtin.apt:
-     autoremove: yes
-    when: apt_upgraded is succeeded and ansible_facts['os_family'] == 'Debian' or ansible_facts['os_family'] == 'Ubuntu'
+    - name: Update Apt
+      apt:
+        update_cache: yes
+      when: ansible_facts['os_family'] in ['Debian', 'Ubuntu']
+      register: apt_updated
 
-  - name: Truncate rotated logs
-    find:
-      paths: /var/log
-      patterns: "*.log"
-      age: 7d
-      recurse: yes
-    register: old_logs
+    - name: Update Apk
+      community.general.apk:
+        update_cache: yes
+      when: ansible_facts['os_family'] == 'Alpine'
+      register: apk_updated
 
-  - name: Truncate old logs
-    command: truncate -s 0 {{ item.path }}
-    loop: "{{ old_logs.files }}"
+    # - name: Repository updated complete
+    #   debug:
+    #     msg: "{{ apt_updated }}"
 
-  - name: Yum autoclean
-    command: "yum clean all"
-    when: ansible_facts['os_family'] == 'RedHat'
-  - name: Apt autoclean
-    ansible.builtin.apt:
-     autoclean: yes
-    when: ansible_facts['os_family'] == 'Debian' or ansible_facts['os_family'] == 'Ubuntu'
+    - name: Upgrade Yum
+      yum:
+        name: '*'
+        state: latest
+      when: ansible_facts['os_family'] == 'RedHat'
+      register: yum_upgraded
 
-  - name: Dist upgrade Apt
-    apt:
-      upgrade: dist
-    when: ansible_facts['os_family'] == 'Debian' or ansible_facts['os_family'] == 'Ubuntu'
+    - name: Upgrade Apt
+      apt:
+        name: '*'
+        state: latest
+        force_apt_get: yes
+      when: ansible_facts['os_family'] in ['Debian', 'Ubuntu']
+      register: apt_upgraded
 
-  - name: Check disk usage
-    command: df -h /
-    register: root_disk
+    - name: Upgrade Apk
+      community.general.apk:
+        upgrade: true
+      when: ansible_facts['os_family'] == 'Alpine'
+      register: apk_upgraded
 
-  - debug:
-      var: root_disk.stdout_lines
+    - name: Autoclean only if disk usage > 80% (Apt)
+      apt:
+        autoclean: yes
+      when: 
+        - ansible_facts['os_family'] in ['Debian', 'Ubuntu']
+        - root_disk.stdout is search("([8-9][0-9]%|100%)")
 
+    - name: Autoclean only if disk usage > 80% (Yum)
+      command: "yum clean all"
+      when: 
+        - ansible_facts['os_family'] == 'RedHat'
+        - root_disk.stdout is search("([8-9][0-9]%|100%)")
 
+    - name: Truncate rotated logs
+      find:
+        paths: /var/log
+        patterns: "*.log"
+        age: 7d
+        recurse: yes
+      register: old_logs
+
+    - name: Truncate old logs
+      command: truncate -s 0 {{ item.path }}
+      loop: "{{ old_logs.files }}"
+
+    - name: Dist upgrade Apt
+      apt:
+        upgrade: dist
+      when: ansible_facts['os_family'] in ['Debian', 'Ubuntu']
