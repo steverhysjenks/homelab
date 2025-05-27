@@ -57,13 +57,11 @@
   - name: Yum Autoremove
     ansible.builtin.yum:
      autoremove: yes
-    when: yum_upgraded is succeeded
-    when: ansible_facts['os_family'] == 'RedHat'
+    when: yum_upgraded is succeeded and ansible_facts['os_family'] == 'RedHat'
   - name: Apt Autoremove
     ansible.builtin.apt:
      autoremove: yes
-    when: apt_upgraded is succeeded
-    when: ansible_facts['os_family'] == 'Debian' or ansible_facts['os_family'] == 'Ubuntu'
+    when: apt_upgraded is succeeded and ansible_facts['os_family'] == 'Debian' or ansible_facts['os_family'] == 'Ubuntu'
 
   - name: truncate logs
     command: truncate -s 1024 /var/log/*.*
