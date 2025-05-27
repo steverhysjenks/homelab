@@ -1,0 +1,46 @@
+---
+- name: Setup NFS mount for all hosts
+  hosts: all
+  become: true
+  vars:
+    nfs_server: "192.168.0.4"
+    nfs_share: "/volume1/docker"
+    mount_point: "/mnt/ds918-docker"
+
+  tasks:
+
+    - name: Install required NFS client package
+      package:
+        name: "{{ nfs_package }}"
+        state: present
+      vars:
+        nfs_package: >-
+          {% if ansible_os_family == 'Debian' %}
+            nfs-common
+          {% elif ansible_os_family in ['Archlinux', 'Alpine'] %}
+            nfs-utils
+          {% else %}
+            nfs-common
+          {% endif %}
+
+    - name: Ensure mount point exists
+      file:
+        path: "{{ mount_point }}"
+        state: directory
+        mode: '0755'
+
+    - name: Mount NFS share
+      mount:
+        src: "{{ nfs_server }}:{{ nfs_share }}"
+        path: "{{ mount_point }}"
+        fstype: nfs
+        opts: rw,vers=4
+        state: mounted
+
+    - name: Make NFS mount persistent
+      mount:
+        src: "{{ nfs_server }}:{{ nfs_share }}"
+        path: "{{ mount_point }}"
+        fstype: nfs
+        opts: rw,vers=4
+        state: present
