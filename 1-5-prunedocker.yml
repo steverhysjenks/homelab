@@ -2,7 +2,7 @@
 
 - name: Prune docker servers
   gather_facts: true
-  hosts: docker
+  hosts: docker, rpidockerswarm
   become: yes
   tasks:
 
