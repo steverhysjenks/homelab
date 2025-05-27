@@ -19,19 +19,19 @@
     debug:
       var: audit_info.stdout_lines
 
-  - name: Remove stale user cache files (over 14 days old)
-    find:
-      paths: /var/cache
-      age: 14d
-      recurse: yes
-    register: stale_cache
+ # - name: Remove stale user cache files (over 14 days old)
+ #   find:
+ #     paths: /var/cache
+ #     age: 14d
+ #     recurse: yes
+ #   register: stale_cache
 
-  - name: Delete stale cache files
-    file:
-      path: "{{ item.path }}"
-      state: absent
-    loop: "{{ stale_cache.files }}"
-    when: stale_cache.matched > 0
+ # - name: Delete stale cache files
+ #   file:
+ #     path: "{{ item.path }}"
+ #     state: absent
+ #   loop: "{{ stale_cache.files }}"
+ #   when: stale_cache.matched > 0
 
   - name: Reboot if required (Debian/Ubuntu)
     reboot:
