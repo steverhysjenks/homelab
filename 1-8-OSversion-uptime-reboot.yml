@@ -22,9 +22,9 @@
       cat /etc/os-release
     register: audit_info
 
-  - name: Show audit output
-    debug:
-      var: audit_info.stdout_lines
+   - name: Show audit output
+     debug:
+       var: audit_info.stdout_lines
 
 
  # - name: Remove stale user cache files (over 14 days old)
