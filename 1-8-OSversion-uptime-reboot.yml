@@ -6,21 +6,21 @@
 
   tasks:
 
-  - name: Skip maintenance on excluded host
-    meta: end_host
-    when: ansible_host == '192.168.0.4'
+    - name: Skip maintenance on excluded host
+      meta: end_host
+      when: ansible_host == '192.168.0.4'
 
-  - name: Record system uptime, hostname, and OS version
-    shell: |
-      echo "=== HOSTNAME ==="
-      hostname
-      echo ""
-      echo "=== UPTIME ==="
-      uptime
-      echo ""
-      echo "=== OS VERSION ==="
-      cat /etc/os-release
-    register: audit_info
+    - name: Record system uptime, hostname, and OS version
+      shell: |
+        echo "=== HOSTNAME ==="
+        hostname
+        echo ""
+        echo "=== UPTIME ==="
+        uptime
+        echo ""
+        echo "=== OS VERSION ==="
+        cat /etc/os-release
+      register: audit_info
 
     - name: Show audit output
       debug:
