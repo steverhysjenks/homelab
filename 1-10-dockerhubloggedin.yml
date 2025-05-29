@@ -46,18 +46,11 @@
 
     - name: Safely parse Docker Hub auth info
       set_fact:
-        docker_registry_info: >-
-          {{
-            (docker_info_check.stdout | length > 0)
-              | ternary((docker_info_check.stdout | from_json), {})
-          }}
+        docker_registry_info: "{{ (docker_info_check.stdout | length > 0) | ternary((docker_info_check.stdout | from_json), {}) }}"
 
     - name: Set Docker Hub auth presence fact
       set_fact:
-        docker_hub_authenticated: >-
-          {{
-            docker_registry_info.get(dockerhub_registry, {}).get('auth') is defined
-          }}
+        docker_hub_authenticated: "{{ docker_registry_info.get(dockerhub_registry, {}).get('auth') is defined }}"
 
     - name: Show Docker Hub auth status
       debug:
