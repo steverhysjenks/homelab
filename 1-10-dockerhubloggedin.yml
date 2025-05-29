@@ -38,7 +38,7 @@
         password: "{{ dockerhub_password }}"
       when: docker_login_needed
 
-       - name: Confirm Docker is authenticated to Docker Hub
+    - name: Confirm Docker is authenticated to Docker Hub
       command: >-
         docker info --format '{{"{{json .RegistryConfig.IndexConfigs}}"}}'
       register: docker_info_check
