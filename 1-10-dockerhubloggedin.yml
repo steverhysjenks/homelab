@@ -21,11 +21,13 @@
       set_fact:
         docker_login_needed: >-
           {{
-            (docker_info.rc != 0) or
+            docker_info.rc != 0 or
             (
-              docker_info.stdout is not none and
+              docker_info.stdout is defined and
               docker_info.stdout | length > 0 and
-              ('auth' not in (docker_info.stdout | from_json(default={})).get(dockerhub_registry, {}))
+              (
+                docker_info.stdout | from_json
+              ).get(dockerhub_registry, {}).get('auth') is not defined
             )
           }}
 
@@ -45,6 +47,6 @@
     - name: Show Docker Hub auth status
       debug:
         msg: >-
-          {% set reg = docker_info_check.stdout | from_json | default({}) %}
+          {% set reg = docker_info_check.stdout | from_json %}
           {% set hub = reg.get(dockerhub_registry, {}) %}
           Docker Hub auth present: {{ 'auth' in hub }}
