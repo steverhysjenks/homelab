@@ -43,14 +43,24 @@
         docker info --format '{{"{{json .RegistryConfig.IndexConfigs}}"}}'
       register: docker_info_check
       changed_when: false
+      failed_when: false  # Don't fail the play if the command errors
 
-    - name: Safely parse Docker Hub auth info
-      set_fact:
-        docker_registry_info: "{{ (docker_info_check.stdout | length > 0) | ternary((docker_info_check.stdout | from_json), {}) }}"
+    - name: Show raw Docker info output (for debugging)
+      debug:
+        msg: "{{ docker_info_check.stdout }}"
 
-    - name: Set Docker Hub auth presence fact
+    - name: Set Docker Hub auth presence fact (safely)
       set_fact:
-        docker_hub_authenticated: "{{ docker_registry_info.get(dockerhub_registry, {}).get('auth') is defined }}"
+        docker_hub_authenticated: >-
+          {{
+            (
+              docker_info_check.stdout is defined and
+              docker_info_check.stdout | length > 0 and
+              (
+                docker_info_check.stdout | from_json
+              ).get(dockerhub_registry, {}).get('auth') is defined
+            )
+          }}
 
     - name: Show Docker Hub auth status
       debug:
