@@ -23,7 +23,11 @@
         docker_login_needed: >-
           {{
             (docker_info.rc != 0) or
-            ('auth' not in (docker_info.stdout | from_json).get(dockerhub_registry, {}))
+            (
+              docker_info.stdout is not none and
+              docker_info.stdout | length > 0 and
+              ('auth' not in (docker_info.stdout | from_json(default={})) | dict).get(dockerhub_registry, {})
+            )
           }}
 
     - name: Login to Docker Hub if not already authenticated
