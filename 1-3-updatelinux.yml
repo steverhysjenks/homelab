@@ -14,11 +14,11 @@
     - debug:
         var: root_disk.stdout_lines
 
-   # - name: Update Yum
-   #   yum:
-   #     update_cache: yes
-   #   when: ansible_facts['os_family'] == 'RedHat'
-   #   register: yum_updated
+    - name: Update Yum
+      yum:
+        update_cache: yes
+      when: ansible_facts['os_family'] == 'RedHat'
+      register: yum_updated
 
     - name: Update Apt
       apt:
