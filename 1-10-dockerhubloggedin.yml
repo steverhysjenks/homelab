@@ -1,6 +1,6 @@
 ---
 - name: Ensure Docker is logged into Docker Hub with expiry reminder
-  hosts: all
+  hosts: dockerexcludesynology,rpidockerswarm
   become: yes
   gather_facts: no
 
