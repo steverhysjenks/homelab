@@ -20,16 +20,16 @@
 
   tasks:
 
-   - name: Parse token expiry date
-     set_fact:
-       docker_token_expiry: "{{ (docker_token_created | to_datetime('%Y-%m-%d') + timedelta(days=docker_token_expiry_days | int)) }}"
-       docker_token_reminder_date: "{{ (docker_token_created | to_datetime('%Y-%m-%d') + timedelta(days=(docker_token_expiry_days - docker_token_reminder_days) | int)) }}"
+    - name: Parse token expiry date
+      set_fact:
+        docker_token_expiry: "{{ (docker_token_created | to_datetime('%Y-%m-%d') + timedelta(days=docker_token_expiry_days | int)) }}"
+        docker_token_reminder_date: "{{ (docker_token_created | to_datetime('%Y-%m-%d') + timedelta(days=(docker_token_expiry_days - docker_token_reminder_days) | int)) }}"
 
     - name: Send NTFY notification if enabled and token is near expiry
       uri:
         url: "{{ ntfy_url }}"
         method: POST
-        body: "Docker Hub token expires on {{ docker_token_expiry.date() }}. Re-generate it soon."
+        body: "Docker Hub token expires on {{ docker_token_expiry.strftime('%Y-%m-%d') }}. Re-generate it soon."
         headers:
           Title: "Docker Hub Token Expiry Reminder"
           Tags: "warning"
