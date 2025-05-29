@@ -1,5 +1,5 @@
 ---
-- name: Ensure Docker is logged into Docker Hub
+- name: Ensure Docker is logged into Docker Hub with expiry reminder
   hosts: all
   become: yes
   gather_facts: no
@@ -9,7 +9,35 @@
     dockerhub_username: "{{ lookup('env', 'DOCKERHUB_USERNAME') }}"
     dockerhub_password: "{{ lookup('env', 'DOCKERHUB_PASSWORD') }}"
 
+    # Manually set the token creation date
+    docker_token_created: "2024-06-01"
+    docker_token_expiry_days: 365
+    docker_token_reminder_days: 14
+
+    # Optional NTFY topic for notifications
+    ntfy_topic: "{{ lookup('env', 'NTFY_TOPIC') | default('', true) }}"
+    ntfy_url: "https://ntfy.sh/{{ ntfy_topic }}"
+
   tasks:
+
+    - name: Parse token expiry date
+      set_fact:
+        docker_token_expiry: "{{ (docker_token_created | to_datetime('%Y-%m-%d') + docker_token_expiry_days | int * 86400) | to_datetime }}"
+        docker_token_reminder_date: "{{ (docker_token_created | to_datetime('%Y-%m-%d') + (docker_token_expiry_days - docker_token_reminder_days) | int * 86400) | to_datetime }}"
+
+    - name: Send NTFY notification if enabled and token is near expiry
+      uri:
+        url: "{{ ntfy_url }}"
+        method: POST
+        body: "Docker Hub token expires on {{ docker_token_expiry.date() }}. Re-generate it soon."
+        headers:
+          Title: "Docker Hub Token Expiry Reminder"
+          Tags: "warning"
+        url_username: "{{ lookup('env', 'NTFY_USER') }}"
+        url_password: "{{ lookup('env', 'NTFY_PASS') }}"
+        force_basic_auth: yes
+        status_code: 200
+      when: ntfy_topic != '' and (ansible_date_time.date | to_datetime('%Y-%m-%d')) >= docker_token_reminder_date
 
     - name: Check if Docker is already logged in to Docker Hub
       command: docker info --format '{{json .RegistryConfig.IndexConfigs}}'
