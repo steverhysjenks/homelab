@@ -1,46 +1,35 @@
 ---
-- name: Setup NFS mount for all hosts
-  hosts: all
+- name: Setup NFS mounts for all hosts
+  hosts: #all #amended this to match which hosts I want it added on
   become: true
   vars:
     nfs_server: "192.168.0.4"
-    nfs_share: "/volume1/docker"
-    mount_point: "/mnt/ds918-docker"
+    nfs_mounts:
+      - { share: "/volume1/docker", mount_point: "/mnt/dsm_nfs_ds918_docker" }
+      - { share: "/volume1/music", mount_point: "/mnt/dsm_nfs_music" }
+      - { share: "/volume1/zzDownload", mount_point: "/mnt/dsm_nfs_zdownload" }
+      - { share: "/volume1/movies", mount_point: "/mnt/dsm_nfs_video" }
+    nfs_options: "rw,vers=4,nofail,_netdev,x-systemd.automount"
 
   tasks:
 
     - name: Install required NFS client package
       package:
-        name: "{{ nfs_package }}"
+        name: "{{ 'nfs-common' if ansible_os_family == 'Debian' else 'nfs-utils' }}"
         state: present
-      vars:
-        nfs_package: >-
-          {% if ansible_os_family == 'Debian' %}
-            nfs-common
-          {% elif ansible_os_family in ['Archlinux', 'Alpine'] %}
-            nfs-utils
-          {% else %}
-            nfs-common
-          {% endif %}
 
-    - name: Ensure mount point exists
+    - name: Ensure all NFS mount points exist
       file:
-        path: "{{ mount_point }}"
+        path: "{{ item.mount_point }}"
         state: directory
         mode: '0755'
+      loop: "{{ nfs_mounts }}"
 
-    - name: Mount NFS share
+    - name: Mount NFS shares and make them persistent
       mount:
-        src: "{{ nfs_server }}:{{ nfs_share }}"
-        path: "{{ mount_point }}"
+        src: "{{ nfs_server }}:{{ item.share }}"
+        path: "{{ item.mount_point }}"
         fstype: nfs
-        opts: rw,vers=4
+        opts: "{{ nfs_options }}"
         state: mounted
-
-    - name: Make NFS mount persistent
-      mount:
-        src: "{{ nfs_server }}:{{ nfs_share }}"
-        path: "{{ mount_point }}"
-        fstype: nfs
-        opts: rw,vers=4
-        state: present
+      loop: "{{ nfs_mounts }}"
