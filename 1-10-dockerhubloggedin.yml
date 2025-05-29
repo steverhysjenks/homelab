@@ -1,5 +1,5 @@
 ---
-- name: Ensure Docker is logged into Docker Hub with expiry reminder
+- name: Ensure Docker is logged into Docker Hub
   hosts: dockerexcludesynology,rpidockerswarm
   become: yes
   gather_facts: no
@@ -12,7 +12,8 @@
   tasks:
 
     - name: Check if Docker is already logged in to Docker Hub
-      command: docker info --format '{{json .RegistryConfig.IndexConfigs}}'
+      command: >-
+        docker info --format '{{"{{json .RegistryConfig.IndexConfigs}}"}}'
       register: docker_info
       changed_when: false
       failed_when: false
