@@ -38,19 +38,25 @@
         password: "{{ dockerhub_password }}"
       when: docker_login_needed
 
-    - name: Confirm Docker is authenticated to Docker Hub
+       - name: Confirm Docker is authenticated to Docker Hub
       command: >-
         docker info --format '{{"{{json .RegistryConfig.IndexConfigs}}"}}'
       register: docker_info_check
       changed_when: false
 
+    - name: Safely parse Docker Hub auth info
+      set_fact:
+        docker_registry_info: >-
+          {{
+            (docker_info_check.stdout | length > 0)
+              | ternary((docker_info_check.stdout | from_json), {})
+          }}
+
     - name: Set Docker Hub auth presence fact
       set_fact:
         docker_hub_authenticated: >-
           {{
-            (
-              docker_info_check.stdout | from_json
-            ).get(dockerhub_registry, {}).get('auth') is defined
+            docker_registry_info.get(dockerhub_registry, {}).get('auth') is defined
           }}
 
     - name: Show Docker Hub auth status
