@@ -44,9 +44,15 @@
       register: docker_info_check
       changed_when: false
 
+    - name: Set Docker Hub auth presence fact
+      set_fact:
+        docker_hub_authenticated: >-
+          {{
+            (
+              docker_info_check.stdout | from_json
+            ).get(dockerhub_registry, {}).get('auth') is defined
+          }}
+
     - name: Show Docker Hub auth status
       debug:
-        msg: >-
-          {% set reg = docker_info_check.stdout | from_json %}
-          {% set hub = reg.get(dockerhub_registry, {}) %}
-          Docker Hub auth present: {{ 'auth' in hub }}
+        msg: "Docker Hub auth present: {{ docker_hub_authenticated }}"
