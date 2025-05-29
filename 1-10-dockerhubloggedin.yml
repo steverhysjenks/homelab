@@ -10,7 +10,6 @@
     dockerhub_password: "{{ lookup('env', 'DOCKERHUB_PASSWORD') }}"
 
   tasks:
-
     - name: Check if Docker is already logged in to Docker Hub
       command: >-
         docker info --format '{{"{{json .RegistryConfig.IndexConfigs}}"}}'
@@ -26,7 +25,7 @@
             (
               docker_info.stdout is not none and
               docker_info.stdout | length > 0 and
-              ('auth' not in (docker_info.stdout | from_json(default={})) | dict).get(dockerhub_registry, {})
+              ('auth' not in (docker_info.stdout | from_json(default={})).get(dockerhub_registry, {}))
             )
           }}
 
