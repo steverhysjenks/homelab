@@ -17,10 +17,10 @@
       changed_when: false
       failed_when: false
 
-    - name: Show raw Docker info output (for debugging)
-      shell: docker info --format '{{"{{json .RegistryConfig.IndexConfigs}}"}}'
-      register: docker_info
-      changed_when: false
+   # - name: Show raw Docker info output (for debugging)
+   #   shell: docker info --format '{{"{{json .RegistryConfig.IndexConfigs}}"}}'
+   #   register: docker_info
+   #   changed_when: false
 
     - name: Determine if login is needed
       set_fact:
