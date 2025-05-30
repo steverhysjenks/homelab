@@ -59,23 +59,23 @@
       changed_when: false
       failed_when: false
 
-    - name: Show raw Docker info output after login attempt (for debugging)
-      debug:
-        msg: "{{ docker_info_check.stdout }}"
+  #  - name: Show raw Docker info output after login attempt (for debugging)
+  #    debug:
+  #      msg: "{{ docker_info_check.stdout }}"
 
-    - name: Set Docker Hub auth presence fact (safely)
-      set_fact:
-        docker_hub_authenticated: >-
-          {{
-            (
-              docker_info_check.stdout is defined and
-              docker_info_check.stdout | length > 0 and
-              (
-                (docker_info_check.stdout | from_json).get(dockerhub_registry, {}).get('auth') is defined
-              )
-            )
-          }}
+  #  - name: Set Docker Hub auth presence fact (safely)
+  #    set_fact:
+  #      docker_hub_authenticated: >-
+  #        {{
+  #          (
+  #            docker_info_check.stdout is defined and
+  #            docker_info_check.stdout | length > 0 and
+  #            (
+  #              (docker_info_check.stdout | from_json).get(dockerhub_registry, {}).get('auth') is defined
+  #            )
+  #          )
+  #        }}
 
-    - name: Show Docker Hub auth status
-      debug:
-        msg: "Docker Hub auth present: {{ docker_hub_authenticated }}"
+  #  - name: Show Docker Hub auth status
+  #    debug:
+  #      msg: "Docker Hub auth present: {{ docker_hub_authenticated }}"
