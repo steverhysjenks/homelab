@@ -32,4 +32,6 @@
         fstype: nfs
         opts: "{{ nfs_options }}"
         state: mounted
+        fstab: yes
       loop: "{{ nfs_mounts }}"
+
