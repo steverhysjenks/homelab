@@ -1,0 +1,35 @@
+---
+- name: Configure NFS mounts
+  hosts: rpidockerswarm
+  become: true
+  vars:
+    nfs_server: "192.168.0.4"
+    nfs_options: "rw,vers=4,nofail,_netdev,x-systemd.automount"
+
+  tasks:
+    - name: Install required NFS client package
+      package:
+        name: "{{ 'nfs-common' if ansible_os_family == 'Debian' else 'nfs-utils' }}"
+        state: present
+
+    # -----------------------------
+    # Remove unwanted old mount and directory
+    # -----------------------------
+
+    - name: Unmount /mnt/dsm_nfs_ds918_docker if mounted
+      mount:
+        path: /mnt/dsm_nfs_ds918_docker
+        state: absent
+      ignore_errors: true
+
+    - name: Remove fstab entry for /mnt/dsm_nfs_ds918_docker if exists
+      mount:
+        path: /mnt/dsm_nfs_ds918_docker
+        state: absent
+        fstab: yes
+      ignore_errors: true
+
+    - name: Remove old mount directory if empty
+      file:
+        path: /mnt/dsm_nfs_ds918_docker
+        state: absent
