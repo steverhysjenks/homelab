@@ -12,11 +12,11 @@
         name: "{{ 'nfs-common' if ansible_os_family == 'Debian' else 'nfs-utils' }}"
         state: present
 
-    - name: Ensure /mnt/dsm_nfs_ds918_docker exists
-      file:
-        path: /mnt/dsm_nfs_ds918_docker
-        state: directory
-        mode: '0755'
+  #  - name: Ensure /mnt/dsm_nfs_ds918_docker exists
+  #    file:
+  #      path: /mnt/dsm_nfs_ds918_docker
+  #      state: directory
+  #      mode: '0755'
 
     - name: Ensure /mnt/dsm_nfs_music exists
       file:
@@ -39,7 +39,7 @@
     - name: Ensure fstab entry for docker share
       mount:
         src: "192.168.0.4:/volume1/docker"
-        path: /mnt/dsm_nfs_ds918_docker
+        path: /mnt/ds918-docker
         fstype: nfs
         opts: "{{ nfs_options }}"
         state: present
@@ -75,7 +75,7 @@
     - name: Mount docker share (skipped during dry run)
       mount:
         src: "192.168.0.4:/volume1/docker"
-        path: /mnt/dsm_nfs_ds918_docker
+        path: /mnt/ds918-docker
         fstype: nfs
         opts: "{{ nfs_options }}"
         state: mounted
