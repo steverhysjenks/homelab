@@ -4,11 +4,6 @@
   become: true
   vars:
     nfs_server: "192.168.0.4"
-    nfs_mounts:
-      - { share: "/volume1/docker", mount_point: "/mnt/dsm_nfs_ds918_docker" }
-      - { share: "/volume1/music", mount_point: "/mnt/dsm_nfs_music" }
-      - { share: "/volume1/zzDownload", mount_point: "/mnt/dsm_nfs_zdownload" }
-      - { share: "/volume1/video", mount_point: "/mnt/dsm_nfs_video" }
     nfs_options: "rw,vers=4,nofail,_netdev,x-systemd.automount"
 
   tasks:
@@ -17,29 +12,98 @@
         name: "{{ 'nfs-common' if ansible_os_family == 'Debian' else 'nfs-utils' }}"
         state: present
 
-    - name: Ensure all NFS mount points exist
+    - name: Ensure /mnt/dsm_nfs_ds918_docker exists
       file:
-        path: "{{ item.mount_point }}"
+        path: /mnt/dsm_nfs_ds918_docker
         state: directory
         mode: '0755'
-      loop: "{{ nfs_mounts }}"
 
-    - name: Ensure fstab entries exist for NFS mounts
+    - name: Ensure /mnt/dsm_nfs_music exists
+      file:
+        path: /mnt/dsm_nfs_music
+        state: directory
+        mode: '0755'
+
+    - name: Ensure /mnt/dsm_nfs_zdownload exists
+      file:
+        path: /mnt/dsm_nfs_zdownload
+        state: directory
+        mode: '0755'
+
+    - name: Ensure /mnt/dsm_nfs_video exists
+      file:
+        path: /mnt/dsm_nfs_video
+        state: directory
+        mode: '0755'
+
+    - name: Ensure fstab entry for docker share
       mount:
-        src: "{{ nfs_server }}:{{ item.share }}"
-        path: "{{ item.mount_point }}"
+        src: "192.168.0.4:/volume1/docker"
+        path: /mnt/dsm_nfs_ds918_docker
         fstype: nfs
         opts: "{{ nfs_options }}"
         state: present
         fstab: yes
-      loop: "{{ nfs_mounts }}"
 
-    - name: Mount the NFS shares (skipped during dry run)
+    - name: Ensure fstab entry for music share
       mount:
-        src: "{{ nfs_server }}:{{ item.share }}"
-        path: "{{ item.mount_point }}"
+        src: "192.168.0.4:/volume1/music"
+        path: /mnt/dsm_nfs_music
+        fstype: nfs
+        opts: "{{ nfs_options }}"
+        state: present
+        fstab: yes
+
+    - name: Ensure fstab entry for zdownload share
+      mount:
+        src: "192.168.0.4:/volume1/zzDownload"
+        path: /mnt/dsm_nfs_zdownload
+        fstype: nfs
+        opts: "{{ nfs_options }}"
+        state: present
+        fstab: yes
+
+    - name: Ensure fstab entry for video share
+      mount:
+        src: "192.168.0.4:/volume1/video"
+        path: /mnt/dsm_nfs_video
+        fstype: nfs
+        opts: "{{ nfs_options }}"
+        state: present
+        fstab: yes
+
+    - name: Mount docker share (skipped during dry run)
+      mount:
+        src: "192.168.0.4:/volume1/docker"
+        path: /mnt/dsm_nfs_ds918_docker
         fstype: nfs
         opts: "{{ nfs_options }}"
         state: mounted
       when: not ansible_check_mode
-      loop: "{{ nfs_mounts }}"
+
+    - name: Mount music share (skipped during dry run)
+      mount:
+        src: "192.168.0.4:/volume1/music"
+        path: /mnt/dsm_nfs_music
+        fstype: nfs
+        opts: "{{ nfs_options }}"
+        state: mounted
+      when: not ansible_check_mode
+
+    - name: Mount zdownload share (skipped during dry run)
+      mount:
+        src: "192.168.0.4:/volume1/zzDownload"
+        path: /mnt/dsm_nfs_zdownload
+        fstype: nfs
+        opts: "{{ nfs_options }}"
+        state: mounted
+      when: not ansible_check_mode
+
+    - name: Mount video share (skipped during dry run)
+      mount:
+        src: "192.168.0.4:/volume1/video"
+        path: /mnt/dsm_nfs_video
+        fstype: nfs
+        opts: "{{ nfs_options }}"
+        state: mounted
+      when: not ansible_check_mode
