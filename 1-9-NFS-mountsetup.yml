@@ -1,6 +1,6 @@
 ---
 - name: Setup NFS mounts for all hosts
-  hosts: manualtarget
+  hosts: manualtarget,dockerswarm
   become: true
   vars:
     nfs_server: "192.168.0.4"
