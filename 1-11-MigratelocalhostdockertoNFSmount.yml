@@ -64,7 +64,7 @@
       when: ansible_selinux.status == "enabled"
       ignore_errors: true
 
-    - name: Copy container data from /docker to /mnt/dsm_docker
+    - name: Copy container data from /docker to /mnt/ds918-docker
       synchronize:
         src: "{{ source_docker_dir }}/"
         dest: "{{ mount_point }}/"
