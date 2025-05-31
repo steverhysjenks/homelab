@@ -17,11 +17,18 @@
         nfs_package: >-
           {% if ansible_os_family == 'Debian' %}
             nfs-common
-          {% elif ansible_os_family in ['Archlinux', 'Alpine', 'RedHat'] %}
+          {% elif ansible_os_family in ['RedHat', 'AlmaLinux', 'Rocky'] %}
+            nfs-utils
+          {% elif ansible_os_family in ['Archlinux', 'Alpine'] %}
             nfs-utils
           {% else %}
             nfs-common
           {% endif %}
+
+    - name: Install rsync for synchronize module
+      package:
+        name: rsync
+        state: present
 
     - name: Ensure mount point exists
       file:
@@ -29,13 +36,14 @@
         state: directory
         mode: '0755'
 
-    - name: Mount NFS share
+    - name: Mount NFS share persistently
       mount:
         src: "{{ nfs_server }}:{{ nfs_share }}"
         path: "{{ mount_point }}"
         fstype: nfs
-        opts: rw,vers=4,_netdev
+        opts: rw,vers=4
         state: mounted
+        fstab: yes
 
     - name: Allow NFS through firewalld (RHEL only)
       firewalld:
@@ -74,3 +82,4 @@
           ✅ Docker data has been migrated to {{ mount_point }}.
           Update any docker-compose or Portainer volumes to use:
           {{ mount_point }}/<container-name>
+          📌 Remember to ensure this host has access in Synology DSM's NFS rules.
