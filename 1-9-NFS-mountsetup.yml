@@ -1,6 +1,6 @@
 ---
 - name: Setup NFS mounts for all hosts
-  hosts: rpidockerswarm
+  hosts: manualtarget
   become: true
   vars:
     nfs_server: "192.168.0.4"
@@ -12,7 +12,6 @@
     nfs_options: "rw,vers=4,nofail,_netdev,x-systemd.automount"
 
   tasks:
-
     - name: Install required NFS client package
       package:
         name: "{{ 'nfs-common' if ansible_os_family == 'Debian' else 'nfs-utils' }}"
@@ -25,13 +24,22 @@
         mode: '0755'
       loop: "{{ nfs_mounts }}"
 
-    - name: Mount NFS shares and make them persistent
+    - name: Ensure fstab entries exist for NFS mounts
+      mount:
+        src: "{{ nfs_server }}:{{ item.share }}"
+        path: "{{ item.mount_point }}"
+        fstype: nfs
+        opts: "{{ nfs_options }}"
+        state: present
+        fstab: yes
+      loop: "{{ nfs_mounts }}"
+
+    - name: Mount the NFS shares (skipped during dry run)
       mount:
         src: "{{ nfs_server }}:{{ item.share }}"
         path: "{{ item.mount_point }}"
         fstype: nfs
         opts: "{{ nfs_options }}"
         state: mounted
-        fstab: yes
+      when: not ansible_check_mode
       loop: "{{ nfs_mounts }}"
-
