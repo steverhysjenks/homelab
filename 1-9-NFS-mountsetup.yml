@@ -1,6 +1,6 @@
 ---
 - name: Setup NFS mounts for all hosts
-  hosts: #all #amended this to match which hosts I want it added on
+  hosts: rpidockerswarm
   become: true
   vars:
     nfs_server: "192.168.0.4"
