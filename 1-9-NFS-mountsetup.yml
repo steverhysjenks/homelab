@@ -8,7 +8,7 @@
       - { share: "/volume1/docker", mount_point: "/mnt/dsm_nfs_ds918_docker" }
       - { share: "/volume1/music", mount_point: "/mnt/dsm_nfs_music" }
       - { share: "/volume1/zzDownload", mount_point: "/mnt/dsm_nfs_zdownload" }
-      - { share: "/volume1/movies", mount_point: "/mnt/dsm_nfs_video" }
+      - { share: "/volume1/video", mount_point: "/mnt/dsm_nfs_video" }
     nfs_options: "rw,vers=4,nofail,_netdev,x-systemd.automount"
 
   tasks:
