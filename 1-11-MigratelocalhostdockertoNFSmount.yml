@@ -1,6 +1,6 @@
 ---
 - name: Mount DSM NFS and migrate Docker data
-  hosts: manualtarget
+  hosts: targeted_old_host
   become: true
   vars:
     nfs_server: "192.168.0.4"
@@ -17,7 +17,7 @@
         nfs_package: >-
           {% if ansible_os_family == 'Debian' %}
             nfs-common
-          {% elif ansible_os_family in ['Archlinux', 'Alpine'] %}
+          {% elif ansible_os_family in ['Archlinux', 'Alpine', 'RedHat'] %}
             nfs-utils
           {% else %}
             nfs-common
@@ -34,10 +34,29 @@
         src: "{{ nfs_server }}:{{ nfs_share }}"
         path: "{{ mount_point }}"
         fstype: nfs
-        opts: rw,vers=4
+        opts: rw,vers=4,_netdev
         state: mounted
 
-    - name: Copy container data from /root/docker to /mnt/dsm_docker
+    - name: Allow NFS through firewalld (RHEL only)
+      firewalld:
+        service: nfs
+        permanent: true
+        state: enabled
+        immediate: true
+      when: ansible_os_family == 'RedHat'
+      ignore_errors: true
+
+    - name: Set SELinux context for NFS mount (if SELinux is enforcing)
+      command: "semanage fcontext -a -t container_file_t '{{ mount_point }}(/.*)?'"
+      when: ansible_selinux.status == "enabled"
+      ignore_errors: true
+
+    - name: Restore SELinux context on NFS mount
+      command: "restorecon -Rv '{{ mount_point }}'"
+      when: ansible_selinux.status == "enabled"
+      ignore_errors: true
+
+    - name: Copy container data from /docker to /mnt/dsm_docker
       synchronize:
         src: "{{ source_docker_dir }}/"
         dest: "{{ mount_point }}/"
