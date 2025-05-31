@@ -5,7 +5,7 @@
   vars:
     nfs_server: "192.168.0.4"
     nfs_share: "/volume1/docker"
-    mount_point: "/mnt/dsm_docker"
+    mount_point: "/mnt/ds918-docker"
     source_docker_dir: "/docker"
 
   tasks:
