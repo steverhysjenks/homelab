@@ -71,12 +71,13 @@
         - root_disk.stdout is search("([8-9][0-9]%|100%)")
 
     - name: Truncate rotated logs
-      find:
+      ansible.builtin.find:
         paths: /var/log
         patterns: "*.log"
         age: 7d
         recurse: yes
       register: old_logs
+      timeout: 300  # Timeout in seconds
 
     - name: Truncate old logs
       command: truncate -s 0 {{ item.path }}
